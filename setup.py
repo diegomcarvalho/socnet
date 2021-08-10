@@ -18,7 +18,14 @@ with open("src/version.h") as f:
     f.close()
 
 __package_name__ = "socnet"
-__src__ = "src/pybindmodule.cc"
+__src__ = [
+    "src/population.cc",
+    "src/pybindmodule.cc",
+    "src/version.h",
+    "src/calculate.cc",
+    "src/population.hpp",
+    "src/statistics.hpp",
+]
 
 
 class get_pybind_include(object):
@@ -126,5 +133,5 @@ setup(
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
     keywords=["covid19", "social network", "complex network", "net"],
-    classifiers=["License :: GNU"],
+    classifiers=["License :: OSI Approved :: MIT License"],
 )
