@@ -286,7 +286,7 @@ calculate_infection(const int duration,
     for (auto k{ 0 }; k < samples / div; k++) {
         std::vector<std::future<std::vector<std::vector<double>>>> fut;
 
-        for (int i = 0; i < div; i++)
+        for (auto i{ 0 }; i < div; i++)
             fut.push_back(std::async(calculate_infection_sample,
                                      duration,
                                      susceptible_max_size,

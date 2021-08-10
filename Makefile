@@ -6,5 +6,5 @@ $(MODULE):
 	(cd src; make)
 
 clean:
-	rm -f $(MODULE)
+	rm -fr $(MODULE) var socnet.egg-info dist build
 	(cd src; make clean)

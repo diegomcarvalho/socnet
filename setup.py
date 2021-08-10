@@ -7,6 +7,23 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
+import os
+
+
+def get_c_sources(folder, include_headers=False):
+    """Find all C/C++ source files in the `folder` directory."""
+    allowed_extensions = [".c", ".C", ".cc", ".cpp", ".cxx", ".c++"]
+    if include_headers:
+        allowed_extensions.extend([".h", ".hpp"])
+    sources = []
+    for root, dirs, files in os.walk(folder):
+        for name in files:
+            ext = os.path.splitext(name)[1]
+            if ext in allowed_extensions:
+                sources.append(os.path.join(root, name))
+    return sources
+
+
 # Get the long description from the relevant file
 with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
@@ -18,14 +35,7 @@ with open("src/version.h") as f:
     f.close()
 
 __package_name__ = "socnet"
-__src__ = [
-    "src/population.cc",
-    "src/pybindmodule.cc",
-    "src/version.h",
-    "src/calculate.cc",
-    "src/population.hpp",
-    "src/statistics.hpp",
-]
+__src__ = get_c_sources("src", include_headers=(sys.argv[1] == "sdist"))
 
 
 class get_pybind_include(object):
@@ -46,7 +56,7 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         __package_name__,
-        [__src__],
+        sources=__src__,
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
@@ -134,4 +144,5 @@ setup(
     zip_safe=False,
     keywords=["covid19", "social network", "complex network", "net"],
     classifiers=["License :: OSI Approved :: MIT License"],
+    headers=["src/population.hpp", "src/statistics.hpp"],
 )
