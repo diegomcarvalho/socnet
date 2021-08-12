@@ -348,7 +348,7 @@ calculate_infection_with_vaccine(const int duration,
 
     const auto div{ std::thread::hardware_concurrency() };
 
-    for (int k = 0; k < samples / div; k++) {
+    for (int k{ 0 }; k < samples / div; k++) {
         std::vector<std::future<std::vector<std::vector<double>>>> fut;
 
         for (auto i{ 0 }; i < div; i++)
