@@ -1,3 +1,3 @@
 #pragma once
 #include <string>
-const std::string __version__ = "1.0.7";
+const std::string __version__ = "2.0.0";
