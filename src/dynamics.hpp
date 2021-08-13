@@ -13,7 +13,6 @@ class InfectionDynamics
     }
 };
 
-#include <iostream>
 class VaccineInfectionDynamics : public InfectionDynamics
 {
     const double real_efficacy;
