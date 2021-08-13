@@ -51,7 +51,7 @@ calculate_infection_sample(const int duration,
                            const double percentage_in_quarantine,
                            real_uniform_t dis,
                            integer_uniform_t i_dis,
-                           InfectionDynamics inf_dyn)
+                           std::shared_ptr<InfectionDynamics> inf_dyn)
 {
     int S{ susceptible_max_size - i0active - i0recovered };
     int I{ 0 };
@@ -77,7 +77,7 @@ calculate_infection_sample(const int duration,
             if (person.is_active()) {
                 if (person.days_of_infection < max_transmission_day) {
                     person.days_of_infection++;
-                    auto available_new_infected{ inf_dyn(
+                    auto available_new_infected{ inf_dyn->infected(
                       day, gamma, dis(my_gen)) };
 
                     if (!available_new_infected)
@@ -161,7 +161,7 @@ calculate_infection(const int duration,
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
-    InfectionDynamics inf_dyn;
+    auto inf_dyn = std::make_shared<InfectionDynamics>();
 
     const auto div{ std::thread::hardware_concurrency() };
 
@@ -229,7 +229,8 @@ calculate_infection_with_vaccine(const int duration,
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
-    VaccineInfectionDynamics inf_dyn(vaccinated_share, vaccine_efficacy);
+    auto inf_dyn = std::make_shared<VaccineInfectionDynamics>(vaccinated_share,
+                                                              vaccine_efficacy);
 
     const auto div{ std::thread::hardware_concurrency() };
 

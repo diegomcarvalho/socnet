@@ -20,7 +20,7 @@ all: $(MODULE)
 population.o: population.cc population.hpp
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
-calculate.o: calculate.cc population.hpp statistics.hpp
+calculate.o: calculate.cc population.hpp statistics.hpp dynamics.hpp
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 pybindmodule.o: pybindmodule.cc calculate.o

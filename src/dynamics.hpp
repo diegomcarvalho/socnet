@@ -2,21 +2,18 @@
 
 extern std::mt19937_64 my_gen;
 
-int
-powerlaw(double a, double b)
-{
-    return 0;
-}
-
 class InfectionDynamics
 {
   public:
-    virtual int operator()(const int day, const double gamma, const double ran)
+    InfectionDynamics() {}
+    virtual ~InfectionDynamics() {}
+    virtual int infected(const int day, const double gamma, const double ran)
     {
         return static_cast<int>((pow(ran, (-1.0 / gamma))) - 0.5);
     }
 };
 
+#include <iostream>
 class VaccineInfectionDynamics : public InfectionDynamics
 {
     const double real_efficacy;
@@ -27,7 +24,7 @@ class VaccineInfectionDynamics : public InfectionDynamics
       : real_efficacy(vs * ve)
       , dis(0.0, 1.0)
     {}
-    int operator()(const int day, const double gamma, const double ran)
+    int infected(const int day, const double gamma, const double ran) override
     {
         auto immune_individuals{ 0 };
         auto individuals{ static_cast<int>((pow(ran, (-1.0 / gamma))) - 0.5) };
