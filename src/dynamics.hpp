@@ -29,7 +29,7 @@ class VaccineInfectionDynamics : public InfectionDynamics
         auto individuals{ static_cast<int>((pow(ran, (-1.0 / gamma))) - 0.5) };
 
         for (auto i = 0; i < individuals; i++) {
-            immune_individuals += static_cast<int>(real_efficacy < dis(my_gen));
+            immune_individuals += static_cast<int>(real_efficacy > dis(my_gen));
         }
         return immune_individuals;
     }
