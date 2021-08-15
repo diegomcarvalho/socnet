@@ -20,10 +20,10 @@ std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
 inline int
 find_first(Population& population)
 {
-    int size = population.size();
-    int first = size - 1;
+    auto size{ population.size() };
+    auto first{ size - 1 };
 
-    for (int k = 0; k < size; k++) {
+    for (auto k{ 0 }; k < size; k++) {
         if (population[k].is_active()) {
             first = k;
             break;
@@ -53,14 +53,14 @@ calculate_infection_sample(const int duration,
                            integer_uniform_t i_dis,
                            std::shared_ptr<InfectionDynamics> inf_dyn)
 {
+    Statistics<double> infected_stat(duration, 0.0);
+    Statistics<double> susceptible_stat(duration, 0.0);
+    Statistics<double> r_0_stat(duration, 0.0);
+
     int S{ susceptible_max_size - i0active - i0recovered };
     int I{ 0 };
 
     Population population(S);
-
-    Statistics<double> infected_stat(duration, 0.0);
-    Statistics<double> susceptible_stat(duration, 0.0);
-    Statistics<double> r_0_stat(duration, 0.0);
 
     population.seed_infected(
       i0active, i0recovered, percentage_in_quarantine, max_transmission_day);
@@ -111,9 +111,6 @@ calculate_infection_sample(const int duration,
             }
         }
 
-        // /* auto& person = population[ui]; */
-        // for (auto ui{ 0u }; ui < population.size(); ui++) {
-
         int kp{ 0 }, dp{ 0 };
         for (auto& person : population) {
             if ((person.parent == -1) ||
@@ -144,24 +141,23 @@ calculate_infection_sample(const int duration,
 }
 
 std::vector<std::vector<double>>
-calculate_infection(const int duration,
-                    const int susceptible_max_size,
-                    const int i0active,
-                    const int i0recovered,
-                    const int samples,
-                    const int max_transmission_day,
-                    const int max_in_quarantine,
-                    const double gamma,
-                    const double percentage_in_quarantine)
+calculate_infection_parallel(const int duration,
+                             const int susceptible_max_size,
+                             const int i0active,
+                             const int i0recovered,
+                             const int samples,
+                             const int max_transmission_day,
+                             const int max_in_quarantine,
+                             const double gamma,
+                             const double percentage_in_quarantine,
+                             std::shared_ptr<InfectionDynamics> inf_dyn)
 {
-    real_uniform_t dis(0.0, 1.0);
-    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
-
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
-    auto inf_dyn = std::make_shared<InfectionDynamics>();
+    real_uniform_t dis(0.0, 1.0);
+    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
 
     const auto div{ std::thread::hardware_concurrency() };
 
@@ -210,6 +206,31 @@ calculate_infection(const int duration,
 }
 
 std::vector<std::vector<double>>
+calculate_infection(const int duration,
+                    const int susceptible_max_size,
+                    const int i0active,
+                    const int i0recovered,
+                    const int samples,
+                    const int max_transmission_day,
+                    const int max_in_quarantine,
+                    const double gamma,
+                    const double percentage_in_quarantine)
+{
+    auto inf_dyn = std::make_shared<InfectionDynamics>();
+
+    return calculate_infection_parallel(duration,
+                                        susceptible_max_size,
+                                        i0active,
+                                        i0recovered,
+                                        samples,
+                                        max_transmission_day,
+                                        max_in_quarantine,
+                                        gamma,
+                                        percentage_in_quarantine,
+                                        inf_dyn);
+}
+
+std::vector<std::vector<double>>
 calculate_infection_with_vaccine(const int duration,
                                  const int susceptible_max_size,
                                  const int i0active,
@@ -222,58 +243,17 @@ calculate_infection_with_vaccine(const int duration,
                                  const double vaccinated_share,
                                  const double vaccine_efficacy)
 {
-    real_uniform_t dis(0.0, 1.0);
-    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
-
-    Statistics<double> infected_stat(duration, 0.0);
-    Statistics<double> susceptible_stat(duration, 0.0);
-    Statistics<double> r_0_stat(duration, 0.0);
-
     auto inf_dyn = std::make_shared<VaccineInfectionDynamics>(vaccinated_share,
                                                               vaccine_efficacy);
 
-    const auto div{ std::thread::hardware_concurrency() };
-
-    for (int k{ 0 }; k < samples / div; k++) {
-        std::vector<std::future<std::vector<std::vector<double>>>> fut;
-
-        for (auto i{ 0 }; i < div; i++)
-            fut.push_back(std::async(calculate_infection_sample,
-                                     duration,
-                                     susceptible_max_size,
-                                     i0active,
-                                     i0recovered,
-                                     max_transmission_day,
-                                     max_in_quarantine,
-                                     gamma,
-                                     percentage_in_quarantine,
-                                     dis,
-                                     i_dis,
-                                     inf_dyn));
-
-        for (auto& it : fut) {
-            auto ret = it.get();
-            for (auto d{ 0 }; d < duration; d++) {
-                infected_stat.add_value(d, ret[0][d]);
-                susceptible_stat.add_value(d, ret[3][d]);
-                r_0_stat.add_value(d, ret[6][d]);
-            }
-        }
-    }
-
-    std::vector<std::vector<double>> res;
-
-    res.push_back(infected_stat.get_mean());  // 0
-    res.push_back(infected_stat.get_m2());    // 1
-    res.push_back(infected_stat.get_count()); // 2
-
-    res.push_back(susceptible_stat.get_mean());  // 3
-    res.push_back(susceptible_stat.get_m2());    // 4
-    res.push_back(susceptible_stat.get_count()); // 5
-
-    res.push_back(r_0_stat.get_mean());  // 6
-    res.push_back(r_0_stat.get_m2());    // 7
-    res.push_back(r_0_stat.get_count()); // 8
-
-    return res;
+    return calculate_infection_parallel(duration,
+                                        susceptible_max_size,
+                                        i0active,
+                                        i0recovered,
+                                        samples,
+                                        max_transmission_day,
+                                        max_in_quarantine,
+                                        gamma,
+                                        percentage_in_quarantine,
+                                        inf_dyn);
 }
