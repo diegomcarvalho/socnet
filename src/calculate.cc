@@ -20,16 +20,17 @@ std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
 inline int
 find_first(Population& population)
 {
-    auto size{ population.size() };
-    auto first{ size - 1 };
+    // auto size{ population.size() };
+    // auto first{ size - 1 };
+    auto first{ 0 };
+    auto find_function = [&first](auto& p) {
+        first++;
+        return p.is_active();
+    };
 
-    for (auto k{ 0 }; k < size; k++) {
-        if (population[k].is_active()) {
-            first = k;
-            break;
-        }
-    }
-    return first;
+    std::find_if(population.begin(), population.end(), find_function);
+
+    return population.size() == first ? first - 1 : first;
 }
 
 void
@@ -104,9 +105,7 @@ calculate_infection_sample(const int duration,
                     }
                     person.decendants += new_infected;
                 } else {
-                    person.clear_active();
-                    if (population.first_subject() == ind)
-                        population.move_first(ind + 1);
+                    population.clear_active(ind);
                 }
             }
         }

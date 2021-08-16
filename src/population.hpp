@@ -80,6 +80,13 @@ class Population
     auto begin() { return population.begin(); }
     auto end() { return population.end(); }
 
+    void clear_active(int ind)
+    {
+        this->population[ind].clear_active();
+        if (this->first_subject() == ind)
+            this->move_first(ind + 1);
+    }
+
     void new_subject(const int day,
                      const int parent,
                      const int cDay,
