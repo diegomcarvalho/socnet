@@ -12,7 +12,7 @@ class InfectionDynamics
       : gamma(g)
     {}
     virtual ~InfectionDynamics() {}
-    virtual int infected(const int day, const double ran)
+    virtual int infected(const int day, const int ind, const double ran)
     {
         return static_cast<int>((pow(ran, (-1.0 / gamma))) - 0.5);
     }
@@ -31,7 +31,7 @@ class VaccineInfectionDynamics : public InfectionDynamics
       , dis(0.0, 1.0)
     {}
     ~VaccineInfectionDynamics() override {}
-    int infected(const int day, const double ran) override
+    int infected(const int day, const int ind, const double ran) override
     {
         auto immune_individuals{ 0 };
         auto individuals{ static_cast<int>((pow(ran, (-1.0 / this->gamma))) -
@@ -63,7 +63,7 @@ class ProgressiveVaccineInfectionDynamics : public InfectionDynamics
       , dis(0.0, 1.0)
     {}
     ~ProgressiveVaccineInfectionDynamics() override {}
-    int infected(const int day, const double ran) override
+    int infected(const int day, const int ind, const double ran) override
     {
         auto immune_individuals{ 0 };
         auto factor{ static_cast<double>(day) / this->simulation_range };

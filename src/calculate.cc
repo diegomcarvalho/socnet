@@ -79,7 +79,7 @@ calculate_infection_sample(const int duration,
                 if (person.days_of_infection < max_transmission_day) {
                     person.days_of_infection++;
                     auto available_new_infected{ inf_dyn->infected(
-                      day, dis(my_gen)) };
+                      day, ind, dis(my_gen)) };
 
                     if (!available_new_infected)
                         continue;
