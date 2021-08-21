@@ -4,60 +4,10 @@
 #include <random>
 #include <vector>
 
-constexpr uint8_t fACTIVE = 0x01;
-constexpr uint8_t fQUARANTINE = 0x01 << 1;
+#include "subject.hpp"
 
 using real_uniform_t = std::uniform_real_distribution<>;
 using integer_uniform_t = std::uniform_int_distribution<>;
-
-class Subject
-{
-  private:
-    uint8_t flags;
-
-  public:
-    uint8_t days_of_infection;
-    uint32_t parent;
-    uint16_t contamination_day;
-    uint8_t decendants;
-
-    inline const bool is_active() { return this->flags & fACTIVE; }
-
-    inline void set_active() { this->flags ^= fACTIVE; }
-
-    inline void clear_active() { this->flags &= ~fACTIVE; }
-
-    inline const bool is_quarantined() { return this->flags & fQUARANTINE; }
-
-    inline void set_quarantined() { this->flags ^= fQUARANTINE; }
-
-    inline void clear_quarantined() { this->flags &= ~fQUARANTINE; }
-
-    inline void set_active_and_quarantine(bool a, bool q)
-    {
-        this->flags = uint8_t(a) | (uint8_t(q) << 1);
-    }
-
-    Subject(const int doi = 0,
-            const int p = -1,
-            const int c = 0,
-            const bool a = false,
-            const bool q = false)
-      : flags(uint8_t(a) | (uint8_t(q) << 1))
-      , days_of_infection(doi)
-      , parent(p)
-      , contamination_day(c)
-      , decendants(0)
-    {}
-
-    Subject(const bool a, const bool q)
-      : flags(uint8_t(a) | (uint8_t(q) << 1))
-      , days_of_infection(0)
-      , parent(-1)
-      , contamination_day(0)
-      , decendants(0)
-    {}
-};
 
 class Population
 {
@@ -77,8 +27,8 @@ class Population
 
     Subject& operator[](const int index) { return population[index]; }
 
-    auto begin() { return population.begin(); }
-    auto end() { return population.end(); }
+    auto begin() const { return population.begin(); }
+    auto end() const { return population.end(); }
 
     void clear_active(int ind)
     {
@@ -115,7 +65,7 @@ class Population
 
     unsigned int size() const { return population.size(); }
 
-    int first_subject() const { return first_ind; }
+    unsigned int first_subject() const { return first_ind; }
 
     void move_first(const int id) { first_ind = id; }
 };
