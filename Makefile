@@ -5,9 +5,12 @@ all: $(MODULE)
 $(MODULE):
 	(cd src; make)
 
+doc:
+	doxygen Doxyfile
+
 sdev:
 	python3 setup.py sdist
 
 clean:
-	rm -fr $(MODULE) var socnet.egg-info dist build
+	rm -fr $(MODULE) var socnet.egg-info dist build html latex
 	(cd src; make clean)
