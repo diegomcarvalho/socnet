@@ -11,11 +11,41 @@
 
 #include <thread>
 
+#include <cstdlib>
+#include <string>
+
 #include "dynamics.hpp"
 #include "population.hpp"
 #include "statistics.hpp"
 
+// TODO:
+// Move the initialization routines to a specific file
+// Create a namespace (and?? pack global variables into a struct/class)
+
 std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
+static int number_of_threads = 1;
+
+bool
+is_number(const std::string& s)
+{
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+void
+init_module()
+{
+    // std::cout << "calculate.cc - random setup done." << std::endl;
+    my_gen.seed(100);
+
+    if (const char* env_p = std::getenv("SOCNET_NUM_THREADS")) {
+        if (std::string snt(env_p); snt == "CPU_MAX") {
+            number_of_threads = std::thread::hardware_concurrency();
+        } else if (is_number(snt)) {
+            number_of_threads = std::stoi(snt);
+        }
+    }
+    return;
+}
 
 inline int
 find_first(Population& population)
@@ -33,21 +63,13 @@ find_first(Population& population)
     return population.size() == first ? first - 1 : first;
 }
 
-void
-init_module()
-{
-    // std::cout << "calculate.cc - random setup done." << std::endl;
-    my_gen.seed(100);
-    return;
-}
-
 std::vector<std::vector<double>>
-calculate_infection_sample(const int duration,
-                           const int susceptible_max_size,
-                           const int i0active,
-                           const int i0recovered,
-                           const int max_transmission_day,
-                           const int max_in_quarantine,
+calculate_infection_sample(const unsigned int duration,
+                           const unsigned int susceptible_max_size,
+                           const unsigned int i0active,
+                           const unsigned int i0recovered,
+                           const unsigned int max_transmission_day,
+                           const unsigned int max_in_quarantine,
                            const double gamma,
                            const double percentage_in_quarantine,
                            real_uniform_t dis,
@@ -58,8 +80,8 @@ calculate_infection_sample(const int duration,
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
-    int S{ susceptible_max_size - i0active - i0recovered };
-    int I{ 0 };
+    auto S{ susceptible_max_size - i0active - i0recovered };
+    auto I{ 0u };
 
     Population population(S);
 
@@ -158,7 +180,7 @@ calculate_infection_parallel(const int duration,
     real_uniform_t dis(0.0, 1.0);
     integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
 
-    const auto div{ std::thread::hardware_concurrency() };
+    const auto div{ number_of_threads };
 
     for (auto k{ 0 }; k < samples / div; k++) {
         std::vector<std::future<std::vector<std::vector<double>>>> fut;
