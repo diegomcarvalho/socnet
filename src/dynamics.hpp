@@ -1,23 +1,36 @@
-#include "population.hpp"
+///////////////////////////////////////////////////////////////////////////////
+/// The Infection Dynamics Class
+///     Models of infections.
+/// @file dynamics.hpp
+/// @brief The InfectionDynamics Class
+/// @author Diego Carvalho - d.carvalho@ieee.org
+/// @date 2021-08-21
+/// @version 1.0 2021/08/21
+///////////////////////////////////////////////////////////////////////////////
+#pragma once
 
-extern std::mt19937_64 my_gen;
+#include "population.hpp"
+#include "slotmachine.hpp"
 
 class InfectionDynamics
 {
   protected:
     const double gamma;
+    real_uniform_t rgu;
 
   public:
     InfectionDynamics(const double g)
       : gamma(g)
+      , rgu(0.0, 1.0)
     {}
     virtual ~InfectionDynamics() {}
     virtual unsigned int infected(const int day,
                                   const int ind,
-                                  const double ran)
+                                  std::shared_ptr<std::mt19937_64> gen)
     {
-        return static_cast<int>((pow(ran, (-1.0 / gamma))) - 0.5);
+        return static_cast<int>((pow(rgu(*gen), (-1.0 / gamma))) - 0.5);
     }
+    virtual uint8_t tag(const uint32_t ind) { return 0; }
 };
 
 class VaccineInfectionDynamics : public InfectionDynamics
@@ -35,18 +48,19 @@ class VaccineInfectionDynamics : public InfectionDynamics
     ~VaccineInfectionDynamics() override {}
     unsigned int infected(const int day,
                           const int ind,
-                          const double ran) override
+                          std::shared_ptr<std::mt19937_64> gen) override
     {
         auto immune_individuals{ 0 };
-        auto individuals{ static_cast<int>((pow(ran, (-1.0 / this->gamma))) -
-                                           0.5) };
+        auto individuals{ static_cast<int>(
+          (pow(rgu(*gen), (-1.0 / this->gamma))) - 0.5) };
 
         for (auto i = 0; i < individuals; i++) {
             immune_individuals +=
-              static_cast<int>(this->real_efficacy > dis(my_gen));
+              static_cast<int>(this->real_efficacy > dis(*gen));
         }
         return immune_individuals;
     }
+    virtual uint8_t tag(const uint32_t ind) override { return 0; }
 };
 
 class ProgressiveVaccineInfectionDynamics : public InfectionDynamics
@@ -69,17 +83,18 @@ class ProgressiveVaccineInfectionDynamics : public InfectionDynamics
     ~ProgressiveVaccineInfectionDynamics() override {}
     unsigned int infected(const int day,
                           const int ind,
-                          const double ran) override
+                          std::shared_ptr<std::mt19937_64> gen) override
     {
         auto immune_individuals{ 0 };
         auto factor{ static_cast<double>(day) / this->simulation_range };
-        auto individuals{ static_cast<int>((pow(ran, (-1.0 / this->gamma))) -
-                                           0.5) };
+        auto individuals{ static_cast<int>(
+          (pow(rgu(*gen), (-1.0 / this->gamma))) - 0.5) };
 
         for (auto i = 0; i < individuals; i++) {
             immune_individuals +=
-              static_cast<int>((factor * this->real_efficacy) > dis(my_gen));
+              static_cast<int>((factor * this->real_efficacy) > dis(*gen));
         }
         return immune_individuals;
     }
+    virtual uint8_t tag(const uint32_t ind) override { return 0; }
 };

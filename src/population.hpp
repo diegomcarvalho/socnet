@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////
+/// The Population Class
+///     Models an infected population.
+/// @file population.hpp
+/// @brief The Population Class
+/// @author Diego Carvalho - d.carvalho@ieee.org
+/// @date 2021-08-21
+/// @version 1.0 2021/08/21
+///////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <memory>
@@ -12,13 +22,15 @@ using integer_uniform_t = std::uniform_int_distribution<>;
 class Population
 {
   private:
-    std::mt19937_64 my_gen;
+    std::shared_ptr<std::mt19937_64> my_gen;
+    uint32_t first_ind;
     std::vector<Subject> population;
-    int first_ind;
 
   public:
-    Population(const int expected_size = 1000)
-      : first_ind(0)
+    Population(std::shared_ptr<std::mt19937_64> gen,
+               const int expected_size = 1000)
+      : my_gen(gen)
+      , first_ind(0)
     {
         population.reserve(expected_size);
     }
@@ -30,20 +42,22 @@ class Population
     auto begin() const { return population.begin(); }
     auto end() const { return population.end(); }
 
-    void clear_active(int ind)
+    void clear_active(const int ind)
     {
         this->population[ind].clear_active();
         if (this->first_subject() == ind)
             this->move_first(ind + 1);
     }
 
-    void new_subject(const int day,
+    auto new_subject(const int day,
                      const int parent,
                      const int cDay,
                      const bool active,
                      const bool quarantine)
     {
+        auto ind = population.size();
         population.push_back(Subject(day, parent, cDay, active, quarantine));
+        return ind;
     }
 
     void seed_subject(const bool active, const bool quarantine)
@@ -63,9 +77,9 @@ class Population
                        const double percentage,
                        const int max_transmission_day);
 
-    unsigned int size() const { return population.size(); }
+    auto size() const { return population.size(); }
 
-    unsigned int first_subject() const { return first_ind; }
+    uint32_t first_subject() const { return first_ind; }
 
     void move_first(const int id) { first_ind = id; }
 };

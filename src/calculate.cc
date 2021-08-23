@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////
+/// The Social Network pandemic contamination model (SOCNET)
+///     Models an infected population.
+/// @file population.hpp
+/// @brief The Population Class
+/// @author Diego Carvalho - d.carvalho@ieee.org
+/// @date 2021-08-21
+/// @version 1.0 2021/08/21
+///////////////////////////////////////////////////////////////////////////////
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
@@ -16,13 +26,15 @@
 
 #include "dynamics.hpp"
 #include "population.hpp"
+#include "slotmachine.hpp"
 #include "statistics.hpp"
 
 // TODO:
 // Move the initialization routines to a specific file
 // Create a namespace (and?? pack global variables into a struct/class)
+// Check all mersenne twister engines
 
-std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
+// std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
 static int number_of_threads = 1;
 
 bool
@@ -35,7 +47,6 @@ void
 init_module()
 {
     // std::cout << "calculate.cc - random setup done." << std::endl;
-    my_gen.seed(100);
 
     if (const char* env_p = std::getenv("SOCNET_NUM_THREADS")) {
         if (std::string snt(env_p); snt == "CPU_MAX") {
@@ -72,18 +83,20 @@ calculate_infection_sample(const unsigned int duration,
                            const unsigned int max_in_quarantine,
                            const double gamma,
                            const double percentage_in_quarantine,
-                           real_uniform_t dis,
-                           integer_uniform_t i_dis,
+                           std::shared_ptr<std::mt19937_64> gen,
                            std::shared_ptr<InfectionDynamics> inf_dyn)
 {
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
+    real_uniform_t dis(0.0, 1.0);
+    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
+
     auto S{ susceptible_max_size - i0active - i0recovered };
     auto I{ 0u };
 
-    Population population(S);
+    Population population(gen, S);
 
     population.seed_infected(
       i0active, i0recovered, percentage_in_quarantine, max_transmission_day);
@@ -101,7 +114,7 @@ calculate_infection_sample(const unsigned int duration,
                 if (person.days_of_infection < max_transmission_day) {
                     person.days_of_infection++;
                     auto available_new_infected{ inf_dyn->infected(
-                      day, ind, dis(my_gen)) };
+                      day, ind, gen) };
 
                     if (!available_new_infected)
                         continue;
@@ -114,15 +127,16 @@ calculate_infection_sample(const unsigned int duration,
                     auto new_infected{ 0 };
                     for (auto ni{ 0 }; ni < available_new_infected; ni++) {
                         // Check if the individual belongs to S, and
-                        if ((i_dis(my_gen) < S) && (S > 0)) {
+                        if ((i_dis(*gen) < S) && (S > 0)) {
                             new_infected++;
                             S--;
-                            population.new_subject(
+                            auto ns_id = population.new_subject(
                               0,
                               ind,
                               day,
                               true,
-                              (dis(my_gen) < percentage_in_quarantine));
+                              (dis(*gen) < percentage_in_quarantine));
+                            population[ns_id].set_tag(inf_dyn->tag(ns_id));
                         }
                     }
                     person.decendants += new_infected;
@@ -177,15 +191,15 @@ calculate_infection_parallel(const int duration,
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
-    real_uniform_t dis(0.0, 1.0);
-    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
-
     const auto div{ number_of_threads };
+
+    SlotMachine gen_pool(div);
 
     for (auto k{ 0 }; k < samples / div; k++) {
         std::vector<std::future<std::vector<std::vector<double>>>> fut;
 
-        for (auto i{ 0 }; i < div; i++)
+        for (auto i{ 0 }; i < div; i++) {
+            auto gen{ gen_pool.get_random(i) };
             fut.push_back(std::async(calculate_infection_sample,
                                      duration,
                                      susceptible_max_size,
@@ -195,10 +209,9 @@ calculate_infection_parallel(const int duration,
                                      max_in_quarantine,
                                      gamma,
                                      percentage_in_quarantine,
-                                     dis,
-                                     i_dis,
+                                     gen,
                                      inf_dyn));
-
+        }
         for (auto& it : fut) {
             auto ret = it.get();
             for (auto d{ 0 }; d < duration; d++) {

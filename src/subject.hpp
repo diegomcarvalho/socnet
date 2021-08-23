@@ -65,11 +65,14 @@ class Subject
 
     /// set the user's tag
     /// @param tag - byte tag
-    inline void set_tag(const uint8_t tag) { this->flags = fTAG & (tag << 2); }
+    inline void set_tag(const uint16_t tag)
+    {
+        this->flags |= (fTAG & (tag << 2));
+    }
 
     /// get the user's tag
     /// @return uint8_t with the individual tag
-    inline uint8_t get_tag() const { return (this->flags & fTAG) >> 2; }
+    inline uint16_t get_tag() const { return (this->flags & fTAG) >> 2; }
 
     /// set active and quarantined together
     /// @param a - if the individual is active
