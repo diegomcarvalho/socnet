@@ -34,5 +34,5 @@ class SlotMachine
         }
     }
 
-    auto get_random(const int id) { return generator_pool[id]; }
+    auto get_random(const int id) noexcept { return generator_pool[id]; }
 };

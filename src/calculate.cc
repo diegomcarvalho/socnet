@@ -84,7 +84,7 @@ calculate_infection_sample(const unsigned int duration,
                            const double gamma,
                            const double percentage_in_quarantine,
                            std::shared_ptr<std::mt19937_64> gen,
-                           std::shared_ptr<InfectionDynamics> inf_dyn)
+                           std::shared_ptr<InfectionDynamics> inf_dyn) noexcept
 {
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
@@ -159,6 +159,7 @@ calculate_infection_sample(const unsigned int duration,
     }
 
     std::vector<std::vector<double>> res;
+    Statistics<double> inf_dyn_stat{ inf_dyn->statistics() };
 
     res.push_back(infected_stat.get_mean());  // 0
     res.push_back(infected_stat.get_m2());    // 1
@@ -171,6 +172,10 @@ calculate_infection_sample(const unsigned int duration,
     res.push_back(r_0_stat.get_mean());  // 6
     res.push_back(r_0_stat.get_m2());    // 7
     res.push_back(r_0_stat.get_count()); // 8
+
+    res.push_back(inf_dyn_stat.get_mean());  // 9
+    res.push_back(inf_dyn_stat.get_m2());    // 10
+    res.push_back(inf_dyn_stat.get_count()); // 11
 
     return res;
 }
@@ -190,6 +195,7 @@ calculate_infection_parallel(const int duration,
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
+    Statistics<double> inf_dyn_stat(duration, 0.0);
 
     const auto div{ number_of_threads };
 
@@ -218,6 +224,7 @@ calculate_infection_parallel(const int duration,
                 infected_stat.add_value(d, ret[0][d]);
                 susceptible_stat.add_value(d, ret[3][d]);
                 r_0_stat.add_value(d, ret[6][d]);
+                inf_dyn_stat.add_value(d, ret[9][d]);
             }
         }
     }
@@ -236,6 +243,10 @@ calculate_infection_parallel(const int duration,
     res.push_back(r_0_stat.get_m2());    // 7
     res.push_back(r_0_stat.get_count()); // 8
 
+    res.push_back(inf_dyn_stat.get_mean());  // 9
+    res.push_back(inf_dyn_stat.get_m2());    // 10
+    res.push_back(inf_dyn_stat.get_count()); // 11
+
     return res;
 }
 
@@ -250,7 +261,7 @@ calculate_infection(const int duration,
                     const double gamma,
                     const double percentage_in_quarantine)
 {
-    auto inf_dyn = std::make_shared<InfectionDynamics>(gamma);
+    auto inf_dyn = std::make_shared<InfectionDynamics>(gamma, duration);
 
     return calculate_infection_parallel(duration,
                                         susceptible_max_size,
@@ -278,7 +289,7 @@ calculate_infection_with_vaccine(const int duration,
                                  const double vaccine_efficacy)
 {
     auto inf_dyn = std::make_shared<VaccineInfectionDynamics>(
-      gamma, vaccinated_share, vaccine_efficacy);
+      gamma, duration, vaccinated_share, vaccine_efficacy);
 
     return calculate_infection_parallel(duration,
                                         susceptible_max_size,

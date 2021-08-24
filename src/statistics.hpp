@@ -25,12 +25,12 @@ class Statistics
         return;
     }
 
-    const int size() { return sz; }
-    std::vector<T> get_mean() { return mean; }
-    std::vector<T> get_m2() { return m2; }
-    std::vector<T> get_count() { return count; }
+    const int size() noexcept { return sz; }
+    std::vector<T> get_mean() noexcept { return mean; }
+    std::vector<T> get_m2() noexcept { return m2; }
+    std::vector<T> get_count() noexcept { return count; }
 
-    void add_value(const unsigned int id, const T value)
+    void add_value(const unsigned int id, const T value) noexcept
     {
         assert(id < sz);
 
