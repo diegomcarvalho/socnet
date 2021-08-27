@@ -12,7 +12,7 @@ else
     LOSFLAGS = -shared -fPIC
 endif
 
-CFLAGS = -O3 -Wall -std=c++17 $(INLCUDES) $(COSFLAGS)
+CFLAGS = -O3 -Wall -std=c++20 $(INLCUDES) $(COSFLAGS)
 LDFLAGS= $(LOSFLAGS)
 
 all: $(MODULE)

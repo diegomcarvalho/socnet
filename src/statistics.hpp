@@ -1,20 +1,34 @@
+///////////////////////////////////////////////////////////////////////////////
+/// The Statistics Template
+///     Statistics accumulation template
+/// @file statistics.hpp
+/// @brief The Statistics Template
+/// @author Diego Carvalho - d.carvalho@ieee.org
+/// @date 2021-08-21
+/// @version 1.0 2021/08/21
+///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <cmath>
+#include <concepts>
+#include <type_traits>
 #include <vector>
 #define NDEBUG
 #include <cassert>
 
 template<typename T>
+concept Real = std::is_floating_point_v<T>;
+
+template<Real N>
 class Statistics
 {
-    std::vector<T> mean;
-    std::vector<T> m2;
-    std::vector<T> count;
+    std::vector<N> mean;
+    std::vector<N> m2;
+    std::vector<N> count;
     unsigned int sz;
 
   public:
-    Statistics(const int n, T val)
+    Statistics(const int n, N val)
       : sz(n)
     {
         for (auto i{ 0u }; i < sz; i++) {
@@ -26,18 +40,18 @@ class Statistics
     }
 
     const int size() noexcept { return sz; }
-    std::vector<T> get_mean() noexcept { return mean; }
-    std::vector<T> get_m2() noexcept { return m2; }
-    std::vector<T> get_count() noexcept { return count; }
+    std::vector<N> get_mean() noexcept { return mean; }
+    std::vector<N> get_m2() noexcept { return m2; }
+    std::vector<N> get_count() noexcept { return count; }
 
-    void add_value(const unsigned int id, const T value) noexcept
+    void add_value(const unsigned int id, const N value) noexcept
     {
         assert(id < sz);
 
-        T delta = value - mean[id];
+        N delta = value - mean[id];
         count[id] += 1.0;
         mean[id] += delta / count[id];
-        T delta2 = value - mean[id];
+        N delta2 = value - mean[id];
         m2[id] += delta * delta2;
 
         return;
