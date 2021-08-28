@@ -22,37 +22,44 @@ concept Real = std::is_floating_point_v<T>;
 template<Real N>
 class Statistics
 {
-    std::vector<N> mean;
-    std::vector<N> m2;
+    std::vector<N> first_momentum;
+    std::vector<N> second_momentum;
     std::vector<N> count;
-    unsigned int sz;
+    unsigned int vector_size;
 
   public:
-    Statistics(const int n, N val)
-      : sz(n)
+    Statistics(const int internal_size, N init_value)
+      : vector_size(internal_size)
     {
-        for (auto i{ 0u }; i < sz; i++) {
-            mean.push_back(val);
-            m2.push_back(val);
-            count.push_back(val);
+        for (auto i{ 0u }; i < vector_size; i++) {
+            first_momentum.push_back(init_value);
+            second_momentum.push_back(init_value);
+            count.push_back(init_value);
         }
         return;
     }
+    ~Statistics() noexcept = default;
 
-    const int size() noexcept { return sz; }
-    std::vector<N> get_mean() noexcept { return mean; }
-    std::vector<N> get_m2() noexcept { return m2; }
-    std::vector<N> get_count() noexcept { return count; }
-
-    void add_value(const unsigned int id, const N value) noexcept
+    inline const int size() noexcept { return this->vector_size; }
+    inline const std::vector<N>& get_mean() noexcept
     {
-        assert(id < sz);
+        return this->first_momentum;
+    }
+    inline const std::vector<N>& get_variance() noexcept
+    {
+        return this->second_momentum;
+    }
+    inline const std::vector<N>& get_count() noexcept { return this->count; }
 
-        N delta = value - mean[id];
-        count[id] += 1.0;
-        mean[id] += delta / count[id];
-        N delta2 = value - mean[id];
-        m2[id] += delta * delta2;
+    inline void add_value(const unsigned int id, const N current_value) noexcept
+    {
+        assert(id < vector_size);
+
+        N delta = current_value - this->first_momentum[id];
+        this->count[id] += 1.0;
+        this->first_momentum[id] += delta / this->count[id];
+        N delta2 = current_value - this->first_momentum[id];
+        this->second_momentum[id] += delta * delta2;
 
         return;
     }

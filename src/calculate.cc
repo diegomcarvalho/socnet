@@ -161,21 +161,21 @@ calculate_infection_sample(const unsigned int duration,
     std::vector<std::vector<double>> res;
     Statistics<double> inf_dyn_stat{ inf_dyn->statistics() };
 
-    res.push_back(infected_stat.get_mean());  // 0
-    res.push_back(infected_stat.get_m2());    // 1
-    res.push_back(infected_stat.get_count()); // 2
+    res.push_back(infected_stat.get_mean());     // 0
+    res.push_back(infected_stat.get_variance()); // 1
+    res.push_back(infected_stat.get_count());    // 2
 
-    res.push_back(susceptible_stat.get_mean());  // 3
-    res.push_back(susceptible_stat.get_m2());    // 4
-    res.push_back(susceptible_stat.get_count()); // 5
+    res.push_back(susceptible_stat.get_mean());     // 3
+    res.push_back(susceptible_stat.get_variance()); // 4
+    res.push_back(susceptible_stat.get_count());    // 5
 
-    res.push_back(r_0_stat.get_mean());  // 6
-    res.push_back(r_0_stat.get_m2());    // 7
-    res.push_back(r_0_stat.get_count()); // 8
+    res.push_back(r_0_stat.get_mean());     // 6
+    res.push_back(r_0_stat.get_variance()); // 7
+    res.push_back(r_0_stat.get_count());    // 8
 
-    res.push_back(inf_dyn_stat.get_mean());  // 9
-    res.push_back(inf_dyn_stat.get_m2());    // 10
-    res.push_back(inf_dyn_stat.get_count()); // 11
+    res.push_back(inf_dyn_stat.get_mean());     // 9
+    res.push_back(inf_dyn_stat.get_variance()); // 10
+    res.push_back(inf_dyn_stat.get_count());    // 11
 
     return res;
 }
@@ -231,21 +231,21 @@ calculate_infection_parallel(const int duration,
 
     std::vector<std::vector<double>> res;
 
-    res.push_back(infected_stat.get_mean());  // 0
-    res.push_back(infected_stat.get_m2());    // 1
-    res.push_back(infected_stat.get_count()); // 2
+    res.push_back(infected_stat.get_mean());     // 0
+    res.push_back(infected_stat.get_variance()); // 1
+    res.push_back(infected_stat.get_count());    // 2
 
-    res.push_back(susceptible_stat.get_mean());  // 3
-    res.push_back(susceptible_stat.get_m2());    // 4
-    res.push_back(susceptible_stat.get_count()); // 5
+    res.push_back(susceptible_stat.get_mean());     // 3
+    res.push_back(susceptible_stat.get_variance()); // 4
+    res.push_back(susceptible_stat.get_count());    // 5
 
-    res.push_back(r_0_stat.get_mean());  // 6
-    res.push_back(r_0_stat.get_m2());    // 7
-    res.push_back(r_0_stat.get_count()); // 8
+    res.push_back(r_0_stat.get_mean());     // 6
+    res.push_back(r_0_stat.get_variance()); // 7
+    res.push_back(r_0_stat.get_count());    // 8
 
-    res.push_back(inf_dyn_stat.get_mean());  // 9
-    res.push_back(inf_dyn_stat.get_m2());    // 10
-    res.push_back(inf_dyn_stat.get_count()); // 11
+    res.push_back(inf_dyn_stat.get_mean());     // 9
+    res.push_back(inf_dyn_stat.get_variance()); // 10
+    res.push_back(inf_dyn_stat.get_count());    // 11
 
     return res;
 }
