@@ -19,8 +19,6 @@
 #include <memory>
 #include <random>
 
-#include <thread>
-
 #include <cstdlib>
 #include <string>
 
@@ -35,28 +33,7 @@
 // Check all mersenne twister engines
 
 // std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
-static int number_of_threads = 1;
-
-bool
-is_number(const std::string& s)
-{
-    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
-}
-
-void
-init_module()
-{
-    // std::cout << "calculate.cc - random setup done." << std::endl;
-
-    if (const char* env_p = std::getenv("SOCNET_NUM_THREADS")) {
-        if (std::string snt(env_p); snt == "CPU_MAX") {
-            number_of_threads = std::thread::hardware_concurrency();
-        } else if (is_number(snt)) {
-            number_of_threads = std::stoi(snt);
-        }
-    }
-    return;
-}
+int number_of_threads = 1;
 
 inline int
 find_first(Population& population)
@@ -248,57 +225,4 @@ calculate_infection_parallel(const int duration,
     res.push_back(inf_dyn_stat.get_count());    // 11
 
     return res;
-}
-
-std::vector<std::vector<double>>
-calculate_infection(const int duration,
-                    const int susceptible_max_size,
-                    const int i0active,
-                    const int i0recovered,
-                    const int samples,
-                    const int max_transmission_day,
-                    const int max_in_quarantine,
-                    const double gamma,
-                    const double percentage_in_quarantine)
-{
-    auto inf_dyn = std::make_shared<InfectionDynamics>(gamma, duration);
-
-    return calculate_infection_parallel(duration,
-                                        susceptible_max_size,
-                                        i0active,
-                                        i0recovered,
-                                        samples,
-                                        max_transmission_day,
-                                        max_in_quarantine,
-                                        gamma,
-                                        percentage_in_quarantine,
-                                        inf_dyn);
-}
-
-std::vector<std::vector<double>>
-calculate_infection_with_vaccine(const int duration,
-                                 const int susceptible_max_size,
-                                 const int i0active,
-                                 const int i0recovered,
-                                 const int samples,
-                                 const int max_transmission_day,
-                                 const int max_in_quarantine,
-                                 const double gamma,
-                                 const double percentage_in_quarantine,
-                                 const double vaccinated_share,
-                                 const double vaccine_efficacy)
-{
-    auto inf_dyn = std::make_shared<VaccineInfectionDynamics>(
-      gamma, duration, vaccinated_share, vaccine_efficacy);
-
-    return calculate_infection_parallel(duration,
-                                        susceptible_max_size,
-                                        i0active,
-                                        i0recovered,
-                                        samples,
-                                        max_transmission_day,
-                                        max_in_quarantine,
-                                        gamma,
-                                        percentage_in_quarantine,
-                                        inf_dyn);
 }
