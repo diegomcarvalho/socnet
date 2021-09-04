@@ -10,16 +10,20 @@
 #pragma once
 
 #include <cmath>
-#include <concepts>
 #include <type_traits>
 #include <vector>
 #define NDEBUG
 #include <cassert>
 
+#ifdef _HAS_CONCEPTS_
+#include <concepts>
 template<typename T>
 concept Real = std::is_floating_point_v<T>;
 
 template<Real N>
+#else
+template<typename N>
+#endif
 class Statistics
 {
     std::vector<N> first_momentum;
