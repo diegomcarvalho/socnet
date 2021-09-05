@@ -8,12 +8,13 @@
 /// @version 1.0 2021/08/21
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
+#define NDEBUG
+#define _HAS_CONCEPTS_
 
+#include <cassert>
 #include <cmath>
 #include <type_traits>
 #include <vector>
-#define NDEBUG
-#include <cassert>
 
 #ifdef _HAS_CONCEPTS_
 #include <concepts>

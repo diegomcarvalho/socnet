@@ -35,7 +35,7 @@ class Population
         population.reserve(expected_size);
     }
 
-    ~Population() { reset_population(); }
+    ~Population() { this->population.clear(); }
 
     Subject& operator[](const int index) { return population[index]; }
 
@@ -56,16 +56,16 @@ class Population
                      const bool quarantine)
     {
         auto ind = population.size();
-        population.push_back(Subject(day, parent, cDay, active, quarantine));
+        population.emplace_back(day, parent, cDay, active, quarantine);
         return ind;
     }
 
     void seed_subject(const bool active, const bool quarantine)
     {
-        population.push_back(Subject(active, quarantine));
+        population.emplace_back(active, quarantine);
     }
 
-    void reset_population();
+    void reset_population() { this->population.clear(); }
 
     void seed_infected(const int i0active,
                        const int i0recovered,
