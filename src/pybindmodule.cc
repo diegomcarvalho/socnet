@@ -124,9 +124,15 @@ PYBIND11_MODULE(socnet, m)
           " ret[3]: susceptible (mean)\n"
           " ret[4]: susceptible (standard deviation)\n"
           " ret[5]: susceptible (count per day)\n"
-          " ret[6]: R0 (mean)\n"
-          " ret[7]: R0 (standard deviation)\n"
-          " ret[8]: R0 (count per day)\n");
+          " ret[6]: recovered (mean)\n"
+          " ret[7]: recovered (standard deviation)\n"
+          " ret[8]: recovered (count per day)\n"
+          " ret[9]: R0 (mean)\n"
+          " ret[10]: R0 (standard deviation)\n"
+          " ret[11]: R0 (count per day)\n",
+          " ret[12]: inf_dyn_stat (mean)\n"
+          " ret[13]: inf_dyn_stat (standard deviation)\n"
+          " ret[14]]: inf_dyn_stat (count per day)\n");
 
     m.def(
       "calculate_infection_with_vaccine",
@@ -151,7 +157,13 @@ PYBIND11_MODULE(socnet, m)
       " ret[3]: susceptible (mean)\n"
       " ret[4]: susceptible (standard deviation)\n"
       " ret[5]: susceptible (count per day)\n"
-      " ret[6]: R0 (mean)\n"
-      " ret[7]: R0 (standard deviation)\n"
-      " ret[8]: R0 (count per day)\n");
+      " ret[6]: recovered (mean)\n"
+      " ret[7]: recovered (standard deviation)\n"
+      " ret[8]: recovered (count per day)\n"
+      " ret[9]: R0 (mean)\n"
+      " ret[10]: R0 (standard deviation)\n"
+      " ret[11]: R0 (count per day)\n",
+      " ret[12]: inf_dyn_stat (mean)\n"
+      " ret[13]: inf_dyn_stat (standard deviation)\n"
+      " ret[14]]: inf_dyn_stat (count per day)\n");
 }
