@@ -5,6 +5,8 @@ all: $(MODULE)
 $(MODULE):
 	(cd src; make)
 
+build: clean all
+
 doc:
 	doxygen Doxyfile
 

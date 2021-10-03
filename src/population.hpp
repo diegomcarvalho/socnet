@@ -16,39 +16,77 @@
 
 #include "subject.hpp"
 
+// Statistics distribution types used on the code
 using real_uniform_t = std::uniform_real_distribution<>;
 using integer_uniform_t = std::uniform_int_distribution<>;
 
+///////////////////////////////////////////////////////////////////////////////
+/// class Population
+///     a collective of single human beings that belongs to the experiment
+///     this provides bookeeping for infection, quarantine, and tagging.
+///////////////////////////////////////////////////////////////////////////////
 class Population
 {
   private:
+    /// Random number generator
     std::shared_ptr<std::mt19937_64> my_gen;
-    uint32_t first_ind;
+    /// Subect vector
     std::vector<Subject> population;
 
   public:
+    /// Ctor
+    /// @param gen - random number generator shared_prt
+    /// @param expected_size - maximum population size (affect pre allocation)
     Population(std::shared_ptr<std::mt19937_64> gen,
                const int expected_size = 1000)
       : my_gen(gen)
-      , first_ind(0)
     {
-        population.reserve(expected_size);
+        this->population.reserve(expected_size);
     }
 
+    /// Dctor
     ~Population() { this->population.clear(); }
 
-    Subject& operator[](const int index) { return population[index]; }
+    /// index operator
+    /// @param index - subject position
+    Subject& operator[](const int index) { return this->population[index]; }
 
-    auto begin() const { return population.begin(); }
-    auto end() const { return population.end(); }
+    /// begin Subject iterator
+    auto begin() const { return this->population.begin(); }
 
-    void clear_active(const int ind)
+    auto first()
     {
-        this->population[ind].clear_active();
-        if (this->first_subject() == ind)
-            this->move_first(ind + 1);
+        return std::find_if(population.begin(), population.end(), [](auto& p) {
+            return p.is_active();
+        });
     }
 
+    auto end() const { return population.end(); }
+
+    auto count_active()
+    {
+        return std::count_if(population.begin(), population.end(), [](auto& p) {
+            return p.is_active();
+        });
+    }
+
+    auto count_recovered()
+    {
+        return std::count_if(population.begin(), population.end(), [](auto& p) {
+            return !p.is_active();
+        });
+    }
+
+    /// clear the active flag and move fist_ind if needed
+    /// @param ind - individual index
+    void clear_active(const int ind) { this->population[ind].clear_active(); }
+
+    /// emplace a new Subject in the population (full Subject Ctor)
+    /// @param day - days of infection since the infection day
+    /// @param parent - parent index
+    /// @param cDay - the day from Zero-day when the cantamination occurs
+    /// @param active - true if the subject is infecting
+    /// @param quarantine - true if the subject is in quarantine
     auto new_subject(const int day,
                      const int parent,
                      const int cDay,
@@ -60,26 +98,28 @@ class Population
         return ind;
     }
 
-    void seed_subject(const bool active, const bool quarantine)
+    /// emplace a new Subject in the population
+    /// @param active - true if the subject is infecting
+    /// @param quarantine - true if the subject is in quarantine
+    auto seed_subject(const bool active, const bool quarantine)
     {
         population.emplace_back(active, quarantine);
     }
 
-    void reset_population() { this->population.clear(); }
+    /// reset the population, clearing the vector<Subject>
+    auto reset_population() { this->population.clear(); }
 
+    /// seed the population with I and R members
+    /// @param i0active
+    /// @param i0recovered
+    /// @param percentage
+    /// @param max_transmission_day
     void seed_infected(const int i0active,
                        const int i0recovered,
                        const double percentage,
                        const int max_transmission_day);
 
-    void seed_infected(const std::vector<int>& i0active,
-                       const std::vector<int>& i0recovered,
-                       const double percentage,
-                       const int max_transmission_day);
-
     auto size() const { return population.size(); }
 
-    uint32_t first_subject() const { return first_ind; }
-
-    void move_first(const int id) { first_ind = id; }
+    auto id(const Subject& s) const { return &s - &(this->population[0]); }
 };

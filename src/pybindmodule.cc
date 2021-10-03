@@ -31,11 +31,9 @@ is_number(const std::string& s)
     return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }
 
-void
+auto
 init_module()
 {
-    // std::cout << "calculate.cc - random setup done." << std::endl;
-
     if (const char* env_p = std::getenv("SOCNET_NUM_THREADS")) {
         if (std::string snt(env_p); snt == "CPU_MAX") {
             number_of_threads = std::thread::hardware_concurrency();
@@ -46,7 +44,7 @@ init_module()
     return;
 }
 
-std::vector<std::vector<double>>
+auto
 calculate_infection(const int duration,
                     const int susceptible_max_size,
                     const int i0active,
@@ -71,7 +69,7 @@ calculate_infection(const int duration,
                                         inf_dyn);
 }
 
-std::vector<std::vector<double>>
+auto
 calculate_infection_with_vaccine(const int duration,
                                  const int susceptible_max_size,
                                  const int i0active,

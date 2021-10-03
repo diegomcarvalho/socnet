@@ -32,28 +32,11 @@
 // Create a namespace (and?? pack global variables into a struct/class)
 // Check all mersenne twister engines
 
-// std::mt19937_64 my_gen; // Standard mersenne_twister_engine seeded with rd()
 int number_of_threads = 1;
 
-inline int
-find_first(Population& population)
-{
-    // auto size{ population.size() };
-    // auto first{ size - 1 };
-    auto first{ 0 };
-    auto find_function = [&first](auto& p) {
-        first++;
-        return p.is_active();
-    };
-
-    std::find_if(population.begin(), population.end(), find_function);
-
-    return population.size() == first ? first - 1 : first;
-}
-
-std::vector<std::vector<double>>
+auto
 calculate_infection_sample(const unsigned int duration,
-                           const unsigned int susceptible_max_size,
+                           const unsigned int population_max_size,
                            const unsigned int i0active,
                            const unsigned int i0recovered,
                            const unsigned int max_transmission_day,
@@ -65,29 +48,35 @@ calculate_infection_sample(const unsigned int duration,
 {
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
+    Statistics<double> recovered_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
 
     real_uniform_t dis(0.0, 1.0);
-    integer_uniform_t i_dis(0, susceptible_max_size + i0active + i0recovered);
+    integer_uniform_t i_dis(0, population_max_size);
 
-    auto S{ susceptible_max_size - i0active - i0recovered };
-    auto I{ 0u };
+    auto S{ population_max_size - i0active - i0recovered };
+    auto I{ i0active };
+    auto R{ i0recovered };
 
-    Population population(gen, S);
+    Population population(gen, population_max_size);
 
     population.seed_infected(
       i0active, i0recovered, percentage_in_quarantine, max_transmission_day);
 
-    for (int day = 0; day < duration; day++) {
-        I = population.size();
+    for (auto day{ 0 }; day < duration; day++) {
+        I = population.count_active();
+        R = population.count_recovered();
 
         infected_stat.add_value(day, static_cast<double>(I));
         susceptible_stat.add_value(day, static_cast<double>(S));
+        recovered_stat.add_value(day, static_cast<double>(R));
 
-        for (auto ind{ population.first_subject() }; ind < I; ind++) {
-            auto& person = population[ind];
+        for (auto it = population.first(); it != population.end(); it++) {
+
+            auto& person = *it;
 
             if (person.is_active()) {
+                auto ind{ population.id(person) };
                 if (person.days_of_infection < max_transmission_day) {
                     person.days_of_infection++;
                     auto available_new_infected{ inf_dyn->infected(
@@ -146,20 +135,24 @@ calculate_infection_sample(const unsigned int duration,
     res.push_back(susceptible_stat.get_variance()); // 4
     res.push_back(susceptible_stat.get_count());    // 5
 
-    res.push_back(r_0_stat.get_mean());     // 6
-    res.push_back(r_0_stat.get_variance()); // 7
-    res.push_back(r_0_stat.get_count());    // 8
+    res.push_back(recovered_stat.get_mean());     // 6
+    res.push_back(recovered_stat.get_variance()); // 7
+    res.push_back(recovered_stat.get_count());    // 8
 
-    res.push_back(inf_dyn_stat.get_mean());     // 9
-    res.push_back(inf_dyn_stat.get_variance()); // 10
-    res.push_back(inf_dyn_stat.get_count());    // 11
+    res.push_back(r_0_stat.get_mean());     // 9
+    res.push_back(r_0_stat.get_variance()); // 10
+    res.push_back(r_0_stat.get_count());    // 11
+
+    res.push_back(inf_dyn_stat.get_mean());     // 12
+    res.push_back(inf_dyn_stat.get_variance()); // 13
+    res.push_back(inf_dyn_stat.get_count());    // 14
 
     return res;
 }
 
-std::vector<std::vector<double>>
+auto
 calculate_infection_parallel(const int duration,
-                             const int susceptible_max_size,
+                             const int population_max_size,
                              const int i0active,
                              const int i0recovered,
                              const int samples,
@@ -171,6 +164,7 @@ calculate_infection_parallel(const int duration,
 {
     Statistics<double> infected_stat(duration, 0.0);
     Statistics<double> susceptible_stat(duration, 0.0);
+    Statistics<double> recovered_stat(duration, 0.0);
     Statistics<double> r_0_stat(duration, 0.0);
     Statistics<double> inf_dyn_stat(duration, 0.0);
 
@@ -185,7 +179,7 @@ calculate_infection_parallel(const int duration,
             auto gen{ gen_pool.get_random(i) };
             fut.push_back(std::async(calculate_infection_sample,
                                      duration,
-                                     susceptible_max_size,
+                                     population_max_size,
                                      i0active,
                                      i0recovered,
                                      max_transmission_day,
@@ -200,8 +194,9 @@ calculate_infection_parallel(const int duration,
             for (auto d{ 0 }; d < duration; d++) {
                 infected_stat.add_value(d, ret[0][d]);
                 susceptible_stat.add_value(d, ret[3][d]);
-                r_0_stat.add_value(d, ret[6][d]);
-                inf_dyn_stat.add_value(d, ret[9][d]);
+                recovered_stat.add_value(d, ret[6][d]);
+                r_0_stat.add_value(d, ret[9][d]);
+                inf_dyn_stat.add_value(d, ret[12][d]);
             }
         }
     }
@@ -216,13 +211,17 @@ calculate_infection_parallel(const int duration,
     res.push_back(susceptible_stat.get_variance()); // 4
     res.push_back(susceptible_stat.get_count());    // 5
 
-    res.push_back(r_0_stat.get_mean());     // 6
-    res.push_back(r_0_stat.get_variance()); // 7
-    res.push_back(r_0_stat.get_count());    // 8
+    res.push_back(recovered_stat.get_mean());     // 6
+    res.push_back(recovered_stat.get_variance()); // 7
+    res.push_back(recovered_stat.get_count());    // 8
 
-    res.push_back(inf_dyn_stat.get_mean());     // 9
-    res.push_back(inf_dyn_stat.get_variance()); // 10
-    res.push_back(inf_dyn_stat.get_count());    // 11
+    res.push_back(r_0_stat.get_mean());     // 9
+    res.push_back(r_0_stat.get_variance()); // 10
+    res.push_back(r_0_stat.get_count());    // 11
+
+    res.push_back(inf_dyn_stat.get_mean());     // 12
+    res.push_back(inf_dyn_stat.get_variance()); // 13
+    res.push_back(inf_dyn_stat.get_count());    // 15
 
     return res;
 }

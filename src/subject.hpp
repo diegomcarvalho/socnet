@@ -13,6 +13,11 @@
 
 #include <memory>
 
+// Subject flags used to encode current state
+// fACTIVE means the individual is spreading the virus
+// fQUARANTINE means the individual has no mobility with restricted set of
+// succetible fTAG is used to encode an user flag that can be used by Dynamics'
+// algorithms
 constexpr uint16_t fACTIVE = 0x01;
 constexpr uint16_t fQUARANTINE = 0x01 << 1;
 constexpr uint16_t fTAG = 0xFC;
@@ -36,7 +41,7 @@ class Subject
     uint16_t days_of_infection;
     /// infection parent indemnificator (-1 means no parent - seminal)
     uint32_t parent;
-    /// the day from Zero-day what the cantamination occurs
+    /// the day from Zero-day when the cantamination occurs
     uint16_t contamination_day;
     /// the number of decendants
     uint16_t decendants;

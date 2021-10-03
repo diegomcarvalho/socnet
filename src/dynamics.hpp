@@ -64,7 +64,7 @@ class VaccineInfectionDynamics : public InfectionDynamics
         auto individuals{ static_cast<int>(
           (pow(rgu(*gen), (-1.0 / this->gamma))) - 0.5) };
 
-        for (auto i = 0; i < individuals; i++) {
+        for (auto i{ 0 }; i < individuals; i++) {
             immune_individuals +=
               static_cast<int>(this->real_efficacy > dis(*gen));
         }
@@ -102,7 +102,7 @@ class ProgressiveVaccineInfectionDynamics : public InfectionDynamics
         auto individuals{ static_cast<int>(
           (pow(rgu(*gen), (-1.0 / this->gamma))) - 0.5) };
 
-        for (auto i = 0; i < individuals; i++) {
+        for (auto i{ 0 }; i < individuals; i++) {
             immune_individuals +=
               static_cast<int>((factor * this->real_efficacy) > dis(*gen));
         }
