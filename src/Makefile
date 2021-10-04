@@ -2,7 +2,7 @@ MODULE = socnet$(shell python3-config --extension-suffix)
 VERSION = $(shell git describe --tags --always --long --dirty)
 INLCUDES = $(shell python3 -m pybind11 --includes)
 OBS = calculate.o population.o pybindmodule.o
-CC = c++
+CC = clang++
 
 ifeq ($(shell uname -s), Darwin)
 	COSFLAGS = #-include-pch statistics.hpp.gch
@@ -12,7 +12,7 @@ else
     LOSFLAGS = -shared -fPIC
 endif
 
-CFLAGS = -O3 -Wall -std=c++17 $(INLCUDES) $(COSFLAGS)
+CFLAGS = -O3 -Wall -std=c++2a $(INLCUDES) $(COSFLAGS)
 LDFLAGS= $(LOSFLAGS)
 
 all: $(MODULE)
