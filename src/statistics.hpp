@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#define _DOSNT_HAS_CONCEPTS_
+#define _DOES_NOT_HAS_CONCEPTS_
 
 #include <cassert>
 #include <cmath>
