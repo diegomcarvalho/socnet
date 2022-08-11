@@ -18,13 +18,13 @@ LDFLAGS= $(LOSFLAGS)
 all: $(MODULE)
 
 population.o: population.cc population.hpp
-	$(CC) $(CFLAGS) -o $@ -c $< 
+	$(CC) $(CFLAGS) -o $@ -c $< -MJ $@.json
 
 calculate.o: calculate.cc population.hpp statistics.hpp dynamics.hpp
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $< -MJ $@.json
 
 pybindmodule.o: pybindmodule.cc calculate.o
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $< -MJ $@.json
 
 $(MODULE): $(OBS)
 	$(CC) $(LDFLAGS) -o $@ $(OBS)

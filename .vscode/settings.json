@@ -1,5 +1,8 @@
 {
     "files.associations": {
         "concepts": "cpp"
-    }
+    },
+    "compiler-explorer.compiler": "irclang1300",
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/src/compile_commands.json"
 }

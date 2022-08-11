@@ -113,7 +113,8 @@ class Subject
       , parent(p)
       , contamination_day(c)
       , decendants(0)
-    {}
+    {
+    }
 
     /// constructor - special constructor for seminal individuals
     /// @param a - boolean, true if the individual is active (contaminated)
@@ -124,5 +125,6 @@ class Subject
       , parent(-1)
       , contamination_day(0)
       , decendants(0)
-    {}
+    {
+    }
 };

@@ -1,3 +1,11 @@
 *.so
 *.o
 __pycache__/*
+.DS_Store
+.vscode/configurationCache.log
+.vscode/dryrun.log
+.vscode/targets.log
+src/calculate.o.json
+src/compile_commands.json
+src/population.o.json
+src/pybindmodule.o.json
